@@ -34,7 +34,6 @@ def dense_model(nb_units: Union[List[int], int],
         acts = activations
 
     model = Sequential() if not pre_model else pre_model
-    print(model.summary())
     if input_shape and not pre_model:
         model.add(Dense(input_shape=input_shape, units=units[0], activation=acts[0]))
     else:
@@ -42,7 +41,6 @@ def dense_model(nb_units: Union[List[int], int],
 
     for nb_neurons, activation in zip(units[1:], acts[1:]):
         model.add(Dense(units=nb_neurons, activation=activation))
-    model.summary()
     return model
 
 
