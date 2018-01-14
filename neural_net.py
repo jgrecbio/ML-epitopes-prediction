@@ -9,6 +9,7 @@ def dense_model(input_shape,
                 activations: Union[List, object],
                 optimizer,
                 loss=mean_squared_error,
+                model=None,
                 *args, **kwargs
                 ) -> Sequential:
     """
@@ -17,6 +18,7 @@ def dense_model(input_shape,
     :param nb_units: number of neurons per layer or list of number of neurons per layer
     :param activations: activation function to use or list of activation to use per layer
     :param optimizer: keras optimizer to use
+    :param: model: a keras model to iterate on
     :param loss: loss function
     :param args: args to pass to the optimizer
     :param kwargs: kwargs to pass to the optimizer
@@ -39,7 +41,7 @@ def dense_model(input_shape,
     else:
         acts = activations
 
-    model = Sequential()
+    model = Sequential() if not model else model
     model.add(Dense(input_shape=input_shape, units=units[0], activation=acts[0]))
 
     for nb_neurons, activation in zip(units, acts):
