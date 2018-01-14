@@ -16,20 +16,15 @@ conv_operation = namedtuple("conv_operation",
 
 
 def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
-              optimizer,
-              loss,
               input_shape=None,
               pre_model=None,
               dense_nb_neurons: Optional[List[int]]=None,
               dense_activations=None,
-              *args, **kwargs
               ) -> Sequential:
     """
     cnn model with various number of convolution and pooling layer
     + FFN
     :param conv_layout: list of convolution + pooling layer with relevant parameters
-    :param optimizer: keras optimizer to use
-    :param loss: loss function
     :param input_shape: shape of input data
     :param pre_model: a keras model to iterate on
     :param dense_nb_neurons: nb of neurons per layer in the dense post-net
@@ -68,9 +63,6 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
 
     return dense_model(nb_units=dense_nb_neurons,
                        activations=dense_activations,
-                       optimizer=optimizer,
-                       loss=loss,
                        input_shape=input_shape,
-                       pre_model=model,
-                       *args, **kwargs)
+                       pre_model=model)
 

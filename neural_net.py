@@ -1,27 +1,19 @@
 from typing import List, Union
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.losses import mean_squared_error
 
 
 def dense_model(nb_units: Union[List[int], int],
                 activations: Union[List, object],
-                optimizer,
-                loss=mean_squared_error,
                 input_shape=None,
                 pre_model=None,
-                *args, **kwargs
                 ) -> Sequential:
     """
     Create a feed-forward network with various number of layers and neurons
     :param input_shape: shape of input data
     :param nb_units: number of neurons per layer or list of number of neurons per layer
     :param activations: activation function to use or list of activation to use per layer
-    :param optimizer: keras optimizer to use
     :param: pre_model: a keras model to iterate on
-    :param loss: loss function
-    :param args: args to pass to the optimizer
-    :param kwargs: kwargs to pass to the optimizer
     :return: keras Sequential model
     """
 
@@ -42,6 +34,7 @@ def dense_model(nb_units: Union[List[int], int],
         acts = activations
 
     model = Sequential() if not pre_model else pre_model
+    print(model.summary())
     if input_shape and not pre_model:
         model.add(Dense(input_shape=input_shape, units=units[0], activation=acts[0]))
     else:
@@ -49,6 +42,21 @@ def dense_model(nb_units: Union[List[int], int],
 
     for nb_neurons, activation in zip(units[1:], acts[1:]):
         model.add(Dense(units=nb_neurons, activation=activation))
-
-    model.compile(optimizer=optimizer(*args, **kwargs), loss=loss)
+    model.summary()
     return model
+
+
+def compile_model(model: Sequential, optimizer, loss,
+                  *args, **kwargs):
+    """
+    compilation from keras
+    :param model: keras Sequential model
+    :param optimizer: keras optimizer to use
+    :param loss: loss function
+    :param args: args to pass to the optimizer
+    :param kwargs: kwargs to pass to the optimizer
+    :return: compiled sequential model
+    """
+    mod = model
+    mod.compile(optimizer=optimizer(*args, **kwargs), loss=loss)
+    return mod
