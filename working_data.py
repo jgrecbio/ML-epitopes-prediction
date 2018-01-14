@@ -3,7 +3,7 @@ import numpy as np
 from toolz import curry
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split, KFold
-from typing import Tuple
+from typing import Tuple, List
 
 
 def load_data(data_file: str="bdata.20130222.mhci.txt", hla: str="HLA-A*02:01", species: str="human",
@@ -30,11 +30,11 @@ def test_train(data, train_size: int=0.9):
     return train_test_split(data, train_size=train_size)
 
 
-def string_to_ord(epi: str):
+def string_to_ord(epi: str) -> List[int]:
     return [ord(aa) for aa in epi]
 
 
-def encode_sequence(sequences, enc=None, sparse_status=False):
+def encode_sequence(sequences, enc=None, sparse_status=False) -> Tuple[OneHotEncoder, pd.DataFrame]:
     data = pd.DataFrame(np.array(list(sequences.apply(string_to_ord))))
 
     if not enc:
