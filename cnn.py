@@ -1,6 +1,6 @@
 from typing import List, Union, Optional
 from keras.models import Sequential
-from keras.layers import Dense, Conv1D, Activation, MaxPooling1D, Flatten
+from keras.layers import Flatten
 from collections import namedtuple
 from neural_net import dense_model
 
