@@ -29,8 +29,6 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
     :param pre_model: a keras model to iterate on
     :param dense_nb_neurons: nb of neurons per layer in the dense post-net
     :param dense_activations: type of activation per layer in the dense post-net
-    :param args: args to pass to the optimizer
-    :param kwargs: args to pass to the optimizer
     :return: keras Sequential model
     """
 
