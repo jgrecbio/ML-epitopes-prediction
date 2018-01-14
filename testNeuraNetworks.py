@@ -1,9 +1,11 @@
 import numpy as np
 import unittest
+from keras.layers import Conv1D, MaxPooling1D, Flatten
 from keras.activations import sigmoid, linear
 from keras.optimizers import SGD
 from keras.losses import mean_squared_error
 from neural_net import dense_model, compile_model
+from cnn import cnn_model, conv_operation
 
 
 class TestNeuralNetworks(unittest.TestCase):
@@ -29,3 +31,14 @@ class TestNeuralNetworks(unittest.TestCase):
         post_net = dense_model(nb_units=[40, 1], activations=[sigmoid, linear], pre_model=pre_net)
         post_net_compiled = compile_model(post_net, SGD, mean_squared_error, *[0.01])
         post_net_compiled.fit(x=data, y=labels)
+
+    def testCNN(self):
+        data, labels = np.random.random((100, 180, 1)), np.random.random(100)
+        conv_layout = [
+            conv_operation(Conv1D, 64, 2, 1, "valid", "relu", MaxPooling1D, 2),
+            conv_operation(Conv1D, 32, 2, 1, "valid", "relu", MaxPooling1D, 2)
+        ]
+        model = cnn_model(conv_layout, input_shape=(180, 1), dense_nb_neurons=[40, 40, 1],
+                          dense_activations=[sigmoid, sigmoid, linear])
+        model = compile_model(model, SGD, mean_squared_error, **{"lr": 0.01})
+        model.fit(data, labels)
