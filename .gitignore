@@ -1,3 +1,7 @@
+# miscellaneous
+.idea/
+.DS_store
+
 # data
 bdata.20130222.mhci.txt
 
