@@ -46,7 +46,8 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
                                    kernel_size=conv_op.kernel_size,
                                    strides=conv_op.strides,
                                    activation=conv_op.activation,
-                                   padding=conv_op.padding))
+                                   padding=conv_op.padding,
+                                   input_shape=input_shape))
         if conv_op.pool_type:
             model.add(conv_op.pool_type(pool_size=conv_op.pool_size))
 
@@ -54,7 +55,7 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
     for conv, filters, kernel_size, strides, padding, activation, \
         pool_type, pool_size in conv_layout[1:]:
         model.add(conv(filters=filters, strides=strides,
-                       kernel_size=kernel_size, padding="padding",
+                       kernel_size=kernel_size, padding=padding,
                        activation=activation))
         if pool_type:
             model.add(pool_type(pool_size=pool_size))
@@ -63,6 +64,5 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
 
     return dense_model(nb_units=dense_nb_neurons,
                        activations=dense_activations,
-                       input_shape=input_shape,
                        pre_model=model)
 
