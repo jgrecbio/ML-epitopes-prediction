@@ -1,8 +1,8 @@
 from keras import Sequential
 import numpy as np
 import unittest
-from keras.layers import Conv1D, MaxPooling1D, Reshape
-from keras.activations import sigmoid, linear
+from keras.layers import Conv1D, MaxPooling1D, Reshape, GRU
+from keras.activations import sigmoid, linear, relu
 from keras.optimizers import SGD
 from keras.losses import mean_squared_error
 from neural_net import dense_model, compile_model
@@ -63,7 +63,8 @@ class TestNeuralNetworks(unittest.TestCase):
 
     def testRNN(self):
         data, labels = np.random.randint(size=(100, 9), low=1, high=20), np.random.random(100)
-        model = compile_model(rnn_model(), SGD, mean_squared_error,
+        model = compile_model(rnn_model(dense_nb_neurons=[40, 1],
+                                        dense_activations=[relu, linear]), SGD, mean_squared_error,
                               *[0.01])
         model.summary()
         model.fit(data, labels, epochs=1)
