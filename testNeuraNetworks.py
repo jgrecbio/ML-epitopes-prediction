@@ -1,7 +1,7 @@
 from keras import Sequential
 import numpy as np
 import unittest
-from keras.layers import Conv1D, MaxPooling1D, Reshape, GRU
+from keras.layers import Conv1D, MaxPooling1D, Reshape
 from keras.activations import sigmoid, linear, relu
 from keras.optimizers import SGD
 from keras.losses import mean_squared_error

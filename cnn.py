@@ -51,7 +51,7 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
 
     # following layers
     for conv, filters, kernel_size, strides, padding, activation, \
-        pool_type, pool_size in conv_layout[1:]:
+            pool_type, pool_size in conv_layout[1:]:
         model.add(conv(filters=filters, strides=strides,
                        kernel_size=kernel_size, padding=padding,
                        activation=activation))
@@ -63,4 +63,3 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
     return dense_model(nb_units=dense_nb_neurons,
                        activations=dense_activations,
                        pre_model=model)
-
