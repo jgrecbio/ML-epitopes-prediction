@@ -32,7 +32,7 @@ class TestNeuralNetworks(unittest.TestCase):
         pre_net = dense_model(nb_units=40, activations=sigmoid, input_shape=(180, ))
         post_net = dense_model(nb_units=[40, 1], activations=[sigmoid, linear], pre_model=pre_net)
         post_net_compiled = compile_model(post_net, SGD, mean_squared_error, *[0.01])
-        post_net_compiled.fit(x=data, y=labels)
+        post_net_compiled.fit(x=data, y=labels, epochs=1)
 
     def testCNN(self):
         data, labels = np.random.random((100, 180, 1)), np.random.random(100)
