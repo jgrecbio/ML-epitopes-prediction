@@ -68,3 +68,21 @@ class TestNeuralNetworks(unittest.TestCase):
                               *[0.01])
         model.summary()
         model.fit(data, labels, epochs=1)
+
+    def testReg(self):
+        data, labels = np.random.random((100, 180)), np.random.random(100)
+        nb_units_false = [40, 1]
+        nb_units_true = [40, 40, 1]
+        activations = [sigmoid, sigmoid, linear]
+        input_shape = (180,)
+        self.assertRaises(ValueError, dense_model, *[nb_units_false,
+                                                     activations,
+                                                     input_shape])
+        uncompiled_model = dense_model(nb_units=nb_units_true,
+                                       activations=activations,
+                                       input_shape=input_shape,
+                                       l1_regularization=[0.01, 0.01, 0.01],
+                                       dropout_reg=0.5)
+        model = compile_model(model=uncompiled_model, optimizer=SGD,
+                              loss=mean_squared_error, **{"lr": 0.01})
+        model.fit(x=data, y=labels, epochs=1)
