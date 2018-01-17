@@ -10,7 +10,8 @@ def rnn_model(input_dim: int=20,
               nb_rnn_neurons: List[int]=None,
               dense_nb_neurons: Optional[List[int]]=None,
               dense_activations: Optional[List]=None,
-              rnn_cell_type=GRU, pre_model=None, dropout: int=0.5) -> Sequential:
+              rnn_cell_type=GRU, pre_model=None, dropout: int=0.5,
+              *args, **kwargs) -> Sequential:
     """
     Stacked RNN model
     :param input_dim: length of the vocabulary of vectors
@@ -22,6 +23,8 @@ def rnn_model(input_dim: int=20,
     :param rnn_cell_type: type RNN
     :param pre_model: keras Sequential
     :param dropout: rate of dropout for LSTM regularization
+    :param args: extra param to dense model
+    :param kwargs: extra param to dense model
     :return:
     """
 
@@ -39,6 +42,7 @@ def rnn_model(input_dim: int=20,
     # Dens model
     model.add(Flatten())
     if dense_activations and dense_nb_neurons:
-        return dense_model(nb_units=dense_nb_neurons, activations=dense_activations, pre_model=model)
+        return dense_model(nb_units=dense_nb_neurons, activations=dense_activations, pre_model=model,
+                           *args, **kwargs)
 
     return model

@@ -20,6 +20,7 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
               pre_model=None,
               dense_nb_neurons: Optional[List[int]]=None,
               dense_activations=None,
+              *args, **kwargs
               ) -> Sequential:
     """
     cnn model with various number of convolution and pooling layer
@@ -29,6 +30,8 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
     :param pre_model: a keras model to iterate on
     :param dense_nb_neurons: nb of neurons per layer in the dense post-net
     :param dense_activations: type of activation per layer in the dense post-net
+    :param args: extra param to dense model
+    :param kwargs: extra param to dense model
     :return: keras Sequential model
     """
 
@@ -62,4 +65,5 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
 
     return dense_model(nb_units=dense_nb_neurons,
                        activations=dense_activations,
-                       pre_model=model)
+                       pre_model=model,
+                       *args, **kwargs)
