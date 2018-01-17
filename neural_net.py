@@ -1,13 +1,15 @@
-from toolz import curry
+from toolz import merge
 from typing import List, Union, Optional
 from keras.models import Sequential
+from keras.optimizers import adam, Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, Nadam, TFOptimizer
+from keras.losses import mean_squared_error
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1, l2, l1_l2
 
 
 def assert_len(num_or_list: Union[Union[int, float], Union[List[int], List[float]]],
                nb_layers: int,
-               type_error_message: Optional[str]=None):
+               type_error_message: Optional[str] = None):
     if isinstance(num_or_list, list):
         if len(num_or_list) != nb_layers:
             raise ValueError(type_error_message)
@@ -31,26 +33,64 @@ def set_regularization(l1s: List[float], l2s: List[float]):
             yield l1_l2(reg_l1, reg_l2)
 
 
-def dense_model(nb_units: Union[List[int], int],
-                activations: Union[List, object],
-                l1_regularization: Optional[Union[List[float], float]]=0.,
-                l2_regularization: Optional[Union[List[float], float]]=0.,
-                dropout_reg: Optional[Union[List[Union[float, None]], float]]=None,
-                input_shape=None,
-                pre_model=None,
-                ) -> Sequential:
-    """
-    Create a feed-forward network with various number of layers and neurons
-    :param input_shape: shape of input data
-    :param nb_units: number of neurons per layer or list of number of neurons per layer
-    :param activations: activation function to use or list of activation to use per layer
-    :param l1_regularization: l1 reg coef
-    :param l2_regularization: l2 reg coef
-    :param: dropout_reg: dropout rates
-    :param: pre_model: a keras model to iterate on
-    :return: keras Sequential model
+def get_optimizer_params(opti: TFOptimizer,
+                         lr: float, m1: float, m2: float, epsilon: float, decay: float,
+                         rho: float):
+    min_dict = {"lr": lr}
+    if isinstance(opti, SGD):
+        return min_dict
+    elif type(opti) in {Adam, Adamax}:
+        return merge(min_dict, {"beta_1": m1, "beta_2": m2,
+                                "epsilon": epsilon, "decay": decay})
+    elif type(opti) in {RMSprop, Adadelta}:
+        return merge(min_dict, {"rho": rho, "epsilon": epsilon,
+                                "decay": decay})
+    elif isinstance(opti, Adagrad):
+        return merge(min_dict, {"epsilon": epsilon, "decay": decay})
+    elif isinstance(opti, Nadam):
+        return merge(min_dict, {"beta_1": m1, "beta_2": m2, "schedule_decay": decay,
+                                "epsilon": epsilon})
+
+
+def dense_model(
+        # nn architecture
+        nb_units: Union[List[int], int],
+        activations: Union[List, object],
+        l1_regularization: Optional[Union[List[float], float]] = 0.,
+        l2_regularization: Optional[Union[List[float], float]] = 0.,
+        dropout_reg: Optional[Union[List[Union[float, None]], float]] = None,
+        input_shape=None,
+        pre_model=None,
+
+        # nn hyper parameters
+        optimizer=adam,
+        loss=mean_squared_error,
+        learning_rate: float = 0.01,
+        momentum_1: float = 0.95,
+        momentum_2: float = 0.999,
+        epsilon: float = 1e-8,
+        decay: float = 0.,
+        rho: float = 0.9,
+) -> Sequential:
     """
 
+    :param nb_units:
+    :param activations:
+    :param l1_regularization:
+    :param l2_regularization:
+    :param dropout_reg:
+    :param input_shape:
+    :param pre_model:
+    :param optimizer:
+    :param loss:
+    :param learning_rate:
+    :param momentum_1:
+    :param momentum_2:
+    :param epsilon:
+    :param decay:
+    :param rho:
+    :return:
+    """
     if isinstance(nb_units, List) and isinstance(activations, list):
         if len(nb_units) != len(activations):
             raise ValueError("Different numbers of activations and layers")
@@ -82,21 +122,8 @@ def dense_model(nb_units: Union[List[int], int],
                         kernel_regularizer=kernel_reg))
         if dr:
             model.add(Dropout(dr))
+
+    model.compile(optimizer=optimizer(**get_optimizer_params(
+        optimizer, learning_rate, momentum_1, momentum_2, epsilon, decay, rho)), loss=loss)
+
     return model
-
-
-@curry
-def compile_model(model: Sequential, optimizer, loss,
-                  *args, **kwargs):
-    """
-    compilation from keras
-    :param model: keras Sequential model
-    :param optimizer: keras optimizer to use
-    :param loss: loss function
-    :param args: args to pass to the optimizer
-    :param kwargs: kwargs to pass to the optimizer
-    :return: compiled sequential model
-    """
-    mod = model
-    mod.compile(optimizer=optimizer(*args, **kwargs), loss=loss)
-    return mod
