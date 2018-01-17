@@ -1,3 +1,4 @@
+from toolz import curry
 from typing import List, Union, Optional
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
@@ -84,6 +85,7 @@ def dense_model(nb_units: Union[List[int], int],
     return model
 
 
+@curry
 def compile_model(model: Sequential, optimizer, loss,
                   *args, **kwargs):
     """
