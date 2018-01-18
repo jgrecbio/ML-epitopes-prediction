@@ -1,7 +1,7 @@
 from toolz import merge
 from typing import List, Union, Optional
 from keras.models import Sequential
-from keras.optimizers import adam, Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, Nadam, TFOptimizer
+from keras.optimizers import adam, Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, Nadam, TFOptimizer, sgd
 from keras.losses import mean_squared_error
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1, l2, l1_l2
@@ -33,9 +33,10 @@ def set_regularization(l1s: List[float], l2s: List[float]):
             yield l1_l2(reg_l1, reg_l2)
 
 
-def get_optimizer_params(opti: TFOptimizer,
+def get_optimizer_params(opt,
                          lr: float, m1: float, m2: float, epsilon: float, decay: float,
                          rho: float):
+    opti = opt(lr=lr)
     min_dict = {"lr": lr}
     if isinstance(opti, SGD):
         return min_dict
@@ -50,6 +51,8 @@ def get_optimizer_params(opti: TFOptimizer,
     elif isinstance(opti, Nadam):
         return merge(min_dict, {"beta_1": m1, "beta_2": m2, "schedule_decay": decay,
                                 "epsilon": epsilon})
+    else:
+        raise ValueError
 
 
 def dense_model(
@@ -123,7 +126,8 @@ def dense_model(
         if dr:
             model.add(Dropout(dr))
 
-    model.compile(optimizer=optimizer(**get_optimizer_params(
-        optimizer, learning_rate, momentum_1, momentum_2, epsilon, decay, rho)), loss=loss)
+    compile_params = get_optimizer_params(optimizer, learning_rate, momentum_1, momentum_2, epsilon, decay, rho)
+    print(compile_params)
+    model.compile(optimizer=optimizer(**compile_params), loss=loss)
 
     return model
