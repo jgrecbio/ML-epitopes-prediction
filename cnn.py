@@ -4,6 +4,7 @@ from keras.layers import Flatten
 from collections import namedtuple
 from neural_net import dense_model
 
+
 conv_operation = namedtuple("conv_operation",
                             field_names=[
                                 # convolution layer parameters

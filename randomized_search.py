@@ -1,11 +1,18 @@
 from typing import Callable
-from keras.wrappers.scikit_learn import KerasRegressor
+
+# scikit-learn imports
 from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
 from sklearn.metrics import make_scorer, mean_squared_error
-from neural_net import dense_model
+
+# Keras imports
 from keras import Sequential
 from keras.layers import Conv1D, MaxPooling1D, Reshape
 from keras.activations import relu, linear
+from keras.wrappers.scikit_learn import KerasRegressor
+from keras.callbacks import TensorBoard
+
+# import models
+from neural_net import dense_model
 from rnn import rnn_model
 from cnn import cnn_model, conv_operation
 
@@ -42,17 +49,18 @@ rnn1 = rnn_model(nb_rnn_neurons=[32, 32], dense_nb_neurons=[40, 1], dense_activa
 rnn2 = rnn_model(nb_rnn_neurons=[64, 64], dense_nb_neurons=[40, 1], dense_activations=[relu, linear])
 rnn3 = rnn_model(nb_rnn_neurons=[128, 64], dense_nb_neurons=[40, 1], dense_activations=[relu, linear])
 
-nets = [dense1, dense2, dense3, dense4,
-        cnn1, cnn2, cnn3,
-        rnn1, rnn2, rnn3]
+nns = [dense1, dense2, dense3, dense4,
+       cnn1, cnn2, cnn3,
+       rnn1, rnn2, rnn3]
 
 
 def grid_search(x, y, categories, nets):
     scorer = make_scorer(mean_squared_error, greater_is_better=False, )
 
-    for net in nets:
+    for i, net in enumerate(nets):
+        cb = TensorBoard(log_dir="./Graph_nn_{}".format(i), histogram_freq=0, write_graph=True, write_images=True)
         inner_cv = StratifiedKFold(categories)
-        best_model = GridSearchCV(estimator=net, scoring=scorer, cv=inner_cv,
+        best_model = GridSearchCV(estimator=net, scoring=scorer, cv=inner_cv, fit_params={"callbacks": [cb]},
                                   param_grid={
                                       "learning_rate": [0.05, 0.01, 0.005, 0.001],
                                       "dropout_reg": [0.5, 0.3, 0.1],
@@ -61,5 +69,6 @@ def grid_search(x, y, categories, nets):
                                   })
         best_model.fit(x, y)
 
-        best_score = cross_val_score(X=x, y=y, scoring=scorer, groups=categories)
+        best_score = cross_val_score(X=x, y=y, estimator=net, scoring=scorer, groups=categories,
+                                     fit_params={"callbacks": [cb]})
         yield best_model.best_params_, best_score
