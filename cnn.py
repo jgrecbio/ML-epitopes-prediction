@@ -21,6 +21,7 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
               pre_model=None,
               dense_nb_neurons: Optional[List[int]]=None,
               dense_activations=None,
+              name: Optional[str]=None,
               *args, **kwargs
               ) -> Sequential:
     """
@@ -31,12 +32,13 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
     :param pre_model: a keras model to iterate on
     :param dense_nb_neurons: nb of neurons per layer in the dense post-net
     :param dense_activations: type of activation per layer in the dense post-net
+    :param name: name of the neural network
     :param args: extra param to dense model
     :param kwargs: extra param to dense model
     :return: keras Sequential model
     """
 
-    model = Sequential() if not pre_model else pre_model
+    model = Sequential(name=name) if not pre_model else pre_model
 
     if not isinstance(conv_layout, list):
         conv_layout = [conv_layout]

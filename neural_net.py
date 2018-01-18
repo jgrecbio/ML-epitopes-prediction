@@ -25,6 +25,9 @@ def dense_model(
         epsilon: float = 1e-8,
         decay: float = 0.,
         rho: float = 0.9,
+
+        # name
+        name: Optional[str]=None,
 ) -> Sequential:
     """
 
@@ -43,6 +46,7 @@ def dense_model(
     :param epsilon:
     :param decay:
     :param rho:
+    :param name: name of the neural network
     :return:
     """
     if isinstance(nb_units, List) and isinstance(activations, list):
@@ -61,7 +65,7 @@ def dense_model(
 
     reg = set_regularization(l1_reg, l2_reg)
 
-    model = Sequential() if not pre_model else pre_model
+    model = Sequential(name=name) if not pre_model else pre_model
     if input_shape and not pre_model:
         model.add(Dense(input_shape=input_shape, units=units[0], activation=acts[0],
                         kernel_regularizer=next(reg)))

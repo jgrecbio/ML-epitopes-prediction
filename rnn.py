@@ -11,6 +11,7 @@ def rnn_model(input_dim: int=20,
               dense_nb_neurons: Optional[List[int]]=None,
               dense_activations: Optional[List]=None,
               rnn_cell_type=GRU, pre_model=None, dropout: int=0.5,
+              name: Optional[str]=None,
               *args, **kwargs) -> Sequential:
     """
     Stacked RNN model
@@ -23,12 +24,13 @@ def rnn_model(input_dim: int=20,
     :param rnn_cell_type: type RNN
     :param pre_model: keras Sequential
     :param dropout: rate of dropout for LSTM regularization
+    :param name: name of the neural network
     :param args: extra param to dense model
     :param kwargs: extra param to dense model
     :return:
     """
 
-    model = Sequential() if not pre_model else pre_model
+    model = Sequential(name=name) if not pre_model else pre_model
 
     # Embedding layer
     model.add(Embedding(input_dim=input_dim, output_dim=output_dim, input_length=input_length))
