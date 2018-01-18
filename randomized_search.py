@@ -9,7 +9,7 @@ from keras import Sequential
 from keras.layers import Conv1D, MaxPooling1D, Reshape
 from keras.activations import relu, linear
 from keras.wrappers.scikit_learn import KerasRegressor
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, ModelCheckpoint
 
 # import models
 from neural_net import dense_model
@@ -57,22 +57,28 @@ nns = [dense1, dense2, dense3, dense4,
        rnn1, rnn2, rnn3]
 
 
-def grid_search(x, y, categories, nets):
+def grid_search(x_train, y_train, x_val, y_val, categories, nets):
     scorer = make_scorer(mean_squared_error, greater_is_better=False, )
 
     for net in nets:
-        cb = TensorBoard(log_dir="./Graph_nn_{}".format(net.name),
-                         histogram_freq=0, write_graph=True, write_images=True)
+        # tensorboard callback
+        cb_tb = TensorBoard(log_dir="./Graph_nn_{}".format(net.name),
+                            histogram_freq=0, write_graph=True, write_images=True)
+
+        # add validation measure each 5 epochs
+        checkpoint = ModelCheckpoint(filepath=".models/{}.net".format(net.name), period=5)
         inner_cv = StratifiedKFold(categories)
-        best_model = GridSearchCV(estimator=net, scoring=scorer, cv=inner_cv, fit_params={"callbacks": [cb]},
+        best_model = GridSearchCV(estimator=net, scoring=scorer, cv=inner_cv,
+                                  fit_params={"callbacks": [cb_tb]},
                                   param_grid={
                                       "learning_rate": [0.05, 0.01, 0.005, 0.001],
                                       "dropout_reg": [0.5, 0.3, 0.1],
                                       "epochs": [5, 10, 20, 50, 100],
                                       "batch_size": [32, 64, 256, 512]
                                   })
-        best_model.fit(x, y)
+        best_model.fit(x_train, y_train)
 
-        best_score = cross_val_score(X=x, y=y, estimator=net, scoring=scorer, groups=categories,
-                                     fit_params={"callbacks": [cb]})
+        best_score = cross_val_score(X=x_train, y=y_train, estimator=net, scoring=scorer, groups=categories,
+                                     fit_params={"callbacks": [cb_tb, checkpoint],
+                                                 "validation_data": (x_val, y_val)})
         yield best_model.best_params_, best_score
