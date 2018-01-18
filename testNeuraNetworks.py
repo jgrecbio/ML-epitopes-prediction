@@ -46,8 +46,7 @@ class TestNeuralNetworks(unittest.TestCase):
         data, labels = np.random.random((100, 180)), np.random.random(100)
         pre_net = dense_model(nb_units=40, activations=sigmoid, input_shape=(180,))
         post_net = dense_model(nb_units=[40, 1], activations=[sigmoid, linear], pre_model=pre_net)
-        post_net_compiled = compile_model(post_net, SGD, mean_squared_error, *[0.01])
-        post_net_compiled.fit(x=data, y=labels, epochs=1)
+        post_net.fit(x=data, y=labels, epochs=1)
 
     def testCNN(self):
         data, labels = np.random.random((100, 180, 1)), np.random.random(100)
@@ -57,7 +56,6 @@ class TestNeuralNetworks(unittest.TestCase):
         ]
         model = cnn_model(conv_layout, input_shape=(180, 1), dense_nb_neurons=[40, 40, 1],
                           dense_activations=[sigmoid, sigmoid, linear])
-        model = compile_model(model, SGD, mean_squared_error, **{"lr": 0.01})
         model.fit(data, labels, epochs=1)
 
     def testReshapePrenet(self):
@@ -73,14 +71,11 @@ class TestNeuralNetworks(unittest.TestCase):
         model = cnn_model(conv_layout, dense_nb_neurons=[40, 40, 1],
                           dense_activations=[sigmoid, sigmoid, linear],
                           pre_model=model)
-        compile_model(model, SGD, mean_squared_error, *[0.01])
         model.fit(data, labels, epochs=1)
 
     def testRNN(self):
         data, labels = np.random.randint(size=(100, 9), low=1, high=20), np.random.random(100)
-        model = compile_model(rnn_model(dense_nb_neurons=[40, 1],
-                                        dense_activations=[relu, linear]), SGD, mean_squared_error,
-                              *[0.01])
+        model = rnn_model(dense_nb_neurons=[40, 1], dense_activations=[relu, linear])
         model.summary()
         model.fit(data, labels, epochs=1)
 
@@ -93,11 +88,9 @@ class TestNeuralNetworks(unittest.TestCase):
         self.assertRaises(ValueError, dense_model, *[nb_units_false,
                                                      activations,
                                                      input_shape])
-        uncompiled_model = dense_model(nb_units=nb_units_true,
-                                       activations=activations,
-                                       input_shape=input_shape,
-                                       l1_regularization=[0.01, 0.01, 0.01],
-                                       dropout_reg=0.5)
-        model = compile_model(model=uncompiled_model, optimizer=SGD,
-                              loss=mean_squared_error, **{"lr": 0.01})
+        model = dense_model(nb_units=nb_units_true,
+                            activations=activations,
+                            input_shape=input_shape,
+                            l1_regularization=[0.01, 0.01, 0.01],
+                            dropout_reg=0.5)
         model.fit(x=data, y=labels, epochs=1)

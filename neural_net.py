@@ -1,7 +1,7 @@
 from toolz import merge
 from typing import List, Union, Optional
 from keras.models import Sequential
-from keras.optimizers import adam, Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, Nadam, TFOptimizer, sgd
+from keras.optimizers import adam, Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, Nadam
 from keras.losses import mean_squared_error
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1, l2, l1_l2
