@@ -1,11 +1,11 @@
 from typing import Callable
 from keras.wrappers.scikit_learn import KerasRegressor
-from neural_net import dense_model, compile_model
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score
+from sklearn.metrics import make_scorer, mean_squared_error
+from neural_net import dense_model
 from keras import Sequential
 from keras.layers import Conv1D, MaxPooling1D, Reshape
 from keras.activations import relu, linear
-from keras.optimizers import adam
-from keras.losses import mean_squared_error
 from rnn import rnn_model
 from cnn import cnn_model, conv_operation
 
@@ -45,5 +45,21 @@ rnn3 = rnn_model(nb_rnn_neurons=[128, 64], dense_nb_neurons=[40, 1], dense_activ
 nets = [dense1, dense2, dense3, dense4,
         cnn1, cnn2, cnn3,
         rnn1, rnn2, rnn3]
-compiler = compile_model(optimizer=adam, loss=mean_squared_error)
-c_nets = list()
+
+
+def grid_search(x, y, categories, nets):
+    scorer = make_scorer(mean_squared_error, greater_is_better=False, )
+
+    for net in nets:
+        inner_cv = StratifiedKFold(categories)
+        best_model = GridSearchCV(estimator=net, scoring=scorer, cv=inner_cv,
+                                  param_grid={
+                                      "learning_rate": [0.05, 0.01, 0.005, 0.001],
+                                      "dropout_reg": [0.5, 0.3, 0.1],
+                                      "epochs": [5, 10, 20, 50, 100],
+                                      "batch_size": [32, 64, 256, 512]
+                                  })
+        best_model.fit(x, y)
+
+        best_score = cross_val_score(X=x, y=y, scoring=scorer, groups=categories)
+        yield best_model.best_params_, best_score
