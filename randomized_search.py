@@ -12,7 +12,7 @@ from keras.wrappers.scikit_learn import KerasRegressor
 from keras.callbacks import TensorBoard, ModelCheckpoint
 
 # import models
-from neural_net import dense_model
+from neural_net import dense_model, embed_model
 from rnn import rnn_model
 from cnn import cnn_model, conv_operation
 
@@ -33,6 +33,17 @@ dense1 = dense_model([40, 40, 1], [relu, relu, linear], dropout_reg=0.3, input_s
 dense2 = dense_model([80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense2")
 dense3 = dense_model([120, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense3")
 dense4 = dense_model([80, 80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense4")
+
+# fully connected with embeddings
+embed = embed_model(flatten=True)
+dense_em1 = dense_model([40, 40, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,),
+                        name="dense_em1", pre_model=embed)
+dense_em2 = dense_model([80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,),
+                        name="dense_em2", pre_model=embed)
+dense_em3 = dense_model([120, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,),
+                        name="dense_em3", pre_model=embed)
+dense_em4 = dense_model([80, 80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,),
+                        name="dense_em4", pre_model=embed)
 
 # cnn networks
 reshape_model = Sequential(layers=[Reshape(input_shape=(180,), target_shape=(180, 1))])

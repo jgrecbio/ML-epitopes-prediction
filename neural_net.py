@@ -1,9 +1,21 @@
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Tuple
 from keras.models import Sequential
 from keras.optimizers import adam
 from keras.losses import mean_squared_error
-from keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout, Embedding, Reshape, Flatten
 from nn_utils import get_optimizer_params, set_regularization, assert_len
+
+
+def embed_model(input_dim: int=20, output_dim: int=50, input_length: int=9,
+                reshape_dim: Optional[Tuple]=None, flatten: bool=False) -> Sequential:
+    model = Sequential()
+    model.add(Embedding(input_dim=input_dim, output_dim=output_dim,
+                        input_length=input_length))
+    if reshape_dim:
+        model.add(Reshape(reshape_dim))
+    if flatten:
+        model.add(Flatten())
+    return model
 
 
 def dense_model(
