@@ -2,7 +2,7 @@ from typing import List, Union, Optional
 from keras.models import Sequential
 from keras.layers import Flatten
 from collections import namedtuple
-from neural_net import dense_model
+from keras_implementation.neural_net import dense_model
 
 
 conv_operation = namedtuple("conv_operation",

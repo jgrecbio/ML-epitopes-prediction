@@ -12,9 +12,9 @@ from keras.wrappers.scikit_learn import KerasRegressor
 from keras.callbacks import TensorBoard, ModelCheckpoint
 
 # import models
-from neural_net import dense_model
-from rnn import rnn_model
-from cnn import cnn_model, conv_operation
+from keras_implementation.neural_net import dense_model
+from keras_implementation.rnn import rnn_model
+from keras_implementation.cnn import cnn_model, conv_operation
 
 
 def to_regressor(model_fn: Callable, **kwargs) -> KerasRegressor:

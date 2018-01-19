@@ -5,9 +5,9 @@ from keras.layers import Conv1D, MaxPooling1D, Reshape
 from keras.activations import sigmoid, linear, relu
 from keras.optimizers import sgd, rmsprop, adadelta, adagrad, adam, adamax, nadam, SGD
 from keras.losses import mean_squared_error
-from neural_net import dense_model, get_optimizer_params
-from cnn import cnn_model, conv_operation
-from rnn import rnn_model
+from keras_implementation.neural_net import dense_model, get_optimizer_params
+from keras_implementation.cnn import cnn_model, conv_operation
+from keras_implementation.rnn import rnn_model
 
 
 class TestNeuralNetworks(unittest.TestCase):

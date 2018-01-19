@@ -1,7 +1,7 @@
 from typing import List, Optional
 from keras import Sequential
 from keras.layers import GRU, Embedding, Bidirectional, Dropout, Flatten
-from neural_net import dense_model
+from keras_implementation.neural_net import dense_model
 
 
 def rnn_model(input_dim: int=20,

@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.optimizers import adam
 from keras.losses import mean_squared_error
 from keras.layers import Dense, Dropout
-from nn_utils import get_optimizer_params, set_regularization, assert_len
+from keras_implementation.nn_utils import get_optimizer_params, set_regularization, assert_len
 
 
 def dense_model(
