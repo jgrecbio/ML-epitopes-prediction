@@ -2,7 +2,7 @@ from typing import List, Union, Optional
 from keras.models import Sequential
 from keras.optimizers import adam
 from keras.losses import mean_squared_error
-from keras.layers import Dense, Dropout, Embedding, Flatten
+from keras.layers import Dense, Dropout, Embedding, Flatten, Reshape
 from nn_utils import get_optimizer_params, set_regularization, assert_len
 
 
@@ -11,6 +11,10 @@ def embed_pre_net(input_dim: int=20, output_dim: int=50, input_length: int=9):
     model.add(Embedding(input_dim=input_dim, output_dim=output_dim, input_length=input_length))
     model.add(Flatten())
     return model
+
+
+def reshape_pre_net(input_shape=(180,), target_shape=(180, 1)):
+    return Sequential(layers=[Reshape(input_shape=input_shape, target_shape=target_shape)])
 
 
 def dense_model(
@@ -68,7 +72,6 @@ def dense_model(
     l1_reg = assert_len(l1_regularization, nb_layers, "Not all layers are properly regularized")
     l2_reg = assert_len(l2_regularization, nb_layers, "Not all layers are properly regularized")
     dropout = assert_len(dropout_reg, nb_layers, "Not all layers have a proper dropout rate")
-    print(dropout)
 
     reg = set_regularization(l1_reg, l2_reg)
 

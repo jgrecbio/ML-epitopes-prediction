@@ -44,6 +44,7 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
         conv_layout = [conv_layout]
 
     # first layer
+    conv_start = 0
     if input_shape and not pre_model:
         conv_op = conv_layout[0]
         model.add(conv_op.conv_dim(filters=conv_op.filters,
@@ -54,10 +55,11 @@ def cnn_model(conv_layout: Union[conv_operation, List[conv_operation]],
                                    input_shape=input_shape))
         if conv_op.pool_type:
             model.add(conv_op.pool_type(pool_size=conv_op.pool_size))
+        conv_start = 1
 
     # following layers
     for conv, filters, kernel_size, strides, padding, activation, \
-            pool_type, pool_size in conv_layout[1:]:
+            pool_type, pool_size in conv_layout[conv_start:]:
         model.add(conv(filters=filters, strides=strides,
                        kernel_size=kernel_size, padding=padding,
                        activation=activation))

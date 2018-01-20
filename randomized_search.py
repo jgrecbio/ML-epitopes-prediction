@@ -13,7 +13,7 @@ from keras.wrappers.scikit_learn import KerasRegressor
 from keras.callbacks import TensorBoard, ModelCheckpoint
 
 # import models
-from neural_net import dense_model, embed_pre_net
+from neural_net import dense_model, embed_pre_net, reshape_pre_net
 from rnn import rnn_model
 from cnn import cnn_model, conv_operation
 
@@ -36,7 +36,7 @@ def to_regressor(model_fn: Callable, **kwargs) -> KerasRegressor:
 dense1 = dense_model([40, 40, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense1")
 dense2 = dense_model([80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense2")
 dense3 = dense_model([120, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense3")
-dense4 = dense_model([80, 80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense4")
+dense4 = dense_model([80, 80, 80, 1], [relu, relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense4")
 
 # fully connected networks with embed layer
 embed = embed_pre_net()
@@ -46,20 +46,18 @@ dense_embed2 = dense_model([80, 80, 1], [relu, relu, linear], dropout_reg=0.3, n
                            pre_model=embed)
 dense_embed3 = dense_model([120, 80, 1], [relu, relu, linear], dropout_reg=0.3, name="dense3_embed",
                            pre_model=embed)
-dense_embed4 = dense_model([80, 80, 80, 1], [relu, relu, linear], dropout_reg=0.3, name="dense_embed4",
+dense_embed4 = dense_model([80, 80, 80, 1], [relu, relu, relu, linear], dropout_reg=0.3, name="dense_embed4",
                            pre_model=embed)
 
 # cnn networks
-reshape_model = Sequential(layers=[Reshape(input_shape=(180,), target_shape=(180, 1))])
-
 cnn1 = cnn_model(conv_layout=conv_operation(Conv1D, 32, 4, 1, "valid", relu, MaxPooling1D, 2),
-                 pre_model=reshape_model, dense_nb_neurons=[40, 1], dense_activations=[relu, linear],
+                 pre_model=reshape_pre_net(), dense_nb_neurons=[40, 1], dense_activations=[relu, linear],
                  name="cnn1")
 cnn2 = cnn_model(conv_layout=conv_operation(Conv1D, 64, 2, 1, "valid", relu, MaxPooling1D, 2),
-                 pre_model=reshape_model, dense_nb_neurons=[120, 1], dense_activations=[relu, linear],
+                 pre_model=reshape_pre_net(), dense_nb_neurons=[120, 1], dense_activations=[relu, linear],
                  name="cnn2")
 cnn3 = cnn_model(conv_layout=conv_operation(Conv1D, 64, 4, 1, "valid", relu, MaxPooling1D, 4),
-                 pre_model=reshape_model, dense_nb_neurons=[120, 1], dense_activations=[relu, linear],
+                 pre_model=reshape_pre_net(), dense_nb_neurons=[120, 1], dense_activations=[relu, linear],
                  name="cnn3")
 
 # rnn models
@@ -84,6 +82,7 @@ def grid_search(x_train, y_train, x_val, y_val, nets, categories,
     scorer = make_scorer(mean_squared_error, greater_is_better=False)
 
     for net in nets:
+        net.summary()
         # tensorboard callback
         if tensorboard:
             cb_tb = TensorBoard(log_dir="./Graph_nn_{}".format(net.name),

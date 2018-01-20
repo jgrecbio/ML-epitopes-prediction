@@ -21,6 +21,7 @@ def get_one_hot_data(df: pd.DataFrame) -> Tuple[OneHotEncoder, np.ndarray, np.nd
 
 def get_tokenized_data(df: pd.DataFrame) -> np.ndarray:
     tokenizer = Tokenizer(char_level=True)
+    tokenizer.fit_on_sequences(df["sequence"])
     return tokenizer.sequences_to_matrix(df["sequence"])
 
 
