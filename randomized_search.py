@@ -12,7 +12,7 @@ from keras.wrappers.scikit_learn import KerasRegressor
 from keras.callbacks import TensorBoard, ModelCheckpoint
 
 # import models
-from neural_net import dense_model
+from neural_net import dense_model, embed_pre_net
 from rnn import rnn_model
 from cnn import cnn_model, conv_operation
 
@@ -33,6 +33,17 @@ dense1 = dense_model([40, 40, 1], [relu, relu, linear], dropout_reg=0.3, input_s
 dense2 = dense_model([80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense2")
 dense3 = dense_model([120, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense3")
 dense4 = dense_model([80, 80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense4")
+
+# fully connected networks with embed layer
+embed = embed_pre_net()
+dense_embed1 = dense_model([40, 40, 1], [relu, relu, linear], dropout_reg=0.3, name="dense_embed1",
+                           pre_model=embed)
+dense_embed2 = dense_model([80, 80, 1], [relu, relu, linear], dropout_reg=0.3, name="dense_embed2",
+                           pre_model=embed)
+dense_embed3 = dense_model([120, 80, 1], [relu, relu, linear], dropout_reg=0.3, name="dense3_embed",
+                           pre_model=embed)
+dense_embed4 = dense_model([80, 80, 80, 1], [relu, relu, linear], dropout_reg=0.3, name="dense_embed4",
+                           pre_model=embed)
 
 # cnn networks
 reshape_model = Sequential(layers=[Reshape(input_shape=(180,), target_shape=(180, 1))])
@@ -60,6 +71,8 @@ nns = [dense1, dense2, dense3, dense4,
 def grid_search(x_train, y_train, x_val, y_val, categories, nets):
     scorer = make_scorer(mean_squared_error, greater_is_better=False)
 
+    inner_cv = StratifiedKFold(categories)
+    outer_cv = StratifiedKFold(categories)
     for net in nets:
         # tensorboard callback
         cb_tb = TensorBoard(log_dir="./Graph_nn_{}".format(net.name),
@@ -67,7 +80,6 @@ def grid_search(x_train, y_train, x_val, y_val, categories, nets):
 
         # add validation measure each 5 epochs
         checkpoint = ModelCheckpoint(filepath=".models/{}.net".format(net.name), period=5)
-        inner_cv = StratifiedKFold(categories)
         best_model = GridSearchCV(estimator=net, scoring=scorer, cv=inner_cv,
                                   fit_params={"callbacks": [cb_tb]},
                                   param_grid={
@@ -78,7 +90,8 @@ def grid_search(x_train, y_train, x_val, y_val, categories, nets):
                                   })
         best_model.fit(x_train, y_train)
 
-        best_score = cross_val_score(X=x_train, y=y_train, estimator=net, scoring=scorer, groups=categories,
+        best_score = cross_val_score(X=x_train, y=y_train, estimator=net,
+                                     scoring=scorer, cv=outer_cv,
                                      fit_params={"callbacks": [cb_tb, checkpoint],
                                                  "validation_data": (x_val, y_val)})
         yield best_model.best_params_, best_score
