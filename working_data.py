@@ -36,3 +36,8 @@ def encode_sequence(sequences, enc=None, sparse_status=False) -> Tuple[OneHotEnc
         enc.fit(data)
 
     return enc, enc.transform(data)
+
+
+def meas_discretize(se: pd.Series,
+                    nb_categories: int=10) -> pd.Series:
+    return pd.qcut(se, nb_categories)
