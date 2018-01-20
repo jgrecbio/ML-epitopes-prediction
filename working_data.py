@@ -21,8 +21,8 @@ def get_one_hot_data(df: pd.DataFrame) -> Tuple[OneHotEncoder, np.ndarray, np.nd
 
 def get_tokenized_data(df: pd.DataFrame) -> np.ndarray:
     tokenizer = Tokenizer(char_level=True)
-    tokenizer.fit_on_sequences(df["sequence"])
-    return tokenizer.sequences_to_matrix(df["sequence"])
+    tokenizer.fit_on_texts(df["sequence"].tolist())
+    return tokenizer.texts_to_matrix(df["sequence"].tolist())
 
 
 def string_to_ord(epi: str) -> List[int]:
@@ -41,4 +41,4 @@ def encode_sequence(sequences, enc=None, sparse_status=False) -> Tuple[OneHotEnc
 
 def meas_discretize(se: pd.Series,
                     nb_categories: int=10) -> pd.Series:
-    return pd.qcut(se, nb_categories)
+    return pd.qcut(se, nb_categories, duplicates="drop")

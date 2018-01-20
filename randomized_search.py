@@ -2,12 +2,11 @@ import pandas as pd
 from typing import Callable, List
 
 # scikit-learn imports
-from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score, train_test_split
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, cross_val_score, train_test_split, KFold
 from sklearn.metrics import make_scorer, mean_squared_error
 
 # Keras imports
-from keras import Sequential
-from keras.layers import Conv1D, MaxPooling1D, Reshape
+from keras.layers import Conv1D, MaxPooling1D
 from keras.activations import relu, linear
 from keras.wrappers.scikit_learn import KerasRegressor
 from keras.callbacks import TensorBoard, ModelCheckpoint
@@ -21,7 +20,7 @@ from cnn import cnn_model, conv_operation
 from working_data import load_data, get_one_hot_data, get_tokenized_data, meas_discretize
 
 
-def to_regressor(model_fn: Callable, **kwargs) -> KerasRegressor:
+def to_regressor(model_fn: Callable, kwargs) -> KerasRegressor:
     """
     Given a function that creates a keras model, it yield a wrapped
     scikit-learn compatible model
@@ -33,43 +32,53 @@ def to_regressor(model_fn: Callable, **kwargs) -> KerasRegressor:
 
 
 # fully connected networks
-dense1 = dense_model([40, 40, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense1")
-dense2 = dense_model([80, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense2")
-dense3 = dense_model([120, 80, 1], [relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense3")
-dense4 = dense_model([80, 80, 80, 1], [relu, relu, relu, linear], dropout_reg=0.3, input_shape=(180,), name="dense4")
+d1 = (dense_model, {"nb_units": [40, 40, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+                    "input_shape": (180, ), "name": "dense1"})
+
+d2 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+                    "input_shape": (180, ), "name": "dense2"})
+
+d3 = (dense_model, {"nb_units": [120, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+                    "input_shape": (180, ), "name": "dense3"})
+
+d4 = (dense_model, {"nb_units": [80, 80, 80, 1], "activations": [relu, relu, relu, linear], "dropout_reg": 0.3,
+                    "input_shape": (180, ), "name": "dense4"})
 
 # fully connected networks with embed layer
 embed = embed_pre_net()
-dense_embed1 = dense_model([40, 40, 1], [relu, relu, linear], dropout_reg=0.3, name="dense_embed1",
-                           pre_model=embed)
-dense_embed2 = dense_model([80, 80, 1], [relu, relu, linear], dropout_reg=0.3, name="dense_embed2",
-                           pre_model=embed)
-dense_embed3 = dense_model([120, 80, 1], [relu, relu, linear], dropout_reg=0.3, name="dense3_embed",
-                           pre_model=embed)
-dense_embed4 = dense_model([80, 80, 80, 1], [relu, relu, relu, linear], dropout_reg=0.3, name="dense_embed4",
-                           pre_model=embed)
+d_em1 = (dense_model, {"nb_units": [40, 40, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+                       "pre_model": embed, "name": "dense_embed1"})
+d_em2 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+                       "pre_model": embed, "name": "dense_embed2"})
+d_em3 = (dense_model, {"nb_units": [120, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+                       "pre_model": embed, "name": "dense_embed3"})
+d_em4 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+                       "pre_model": embed, "name": "dense_embed4"})
 
 # cnn networks
-cnn1 = cnn_model(conv_layout=conv_operation(Conv1D, 32, 4, 1, "valid", relu, MaxPooling1D, 2),
-                 pre_model=reshape_pre_net(), dense_nb_neurons=[40, 1], dense_activations=[relu, linear],
-                 name="cnn1")
-cnn2 = cnn_model(conv_layout=conv_operation(Conv1D, 64, 2, 1, "valid", relu, MaxPooling1D, 2),
-                 pre_model=reshape_pre_net(), dense_nb_neurons=[120, 1], dense_activations=[relu, linear],
-                 name="cnn2")
-cnn3 = cnn_model(conv_layout=conv_operation(Conv1D, 64, 4, 1, "valid", relu, MaxPooling1D, 4),
-                 pre_model=reshape_pre_net(), dense_nb_neurons=[120, 1], dense_activations=[relu, linear],
-                 name="cnn3")
+c1 = (cnn_model, {"conv_layout": conv_operation(Conv1D, 32, 4, 1, "valid", relu, MaxPooling1D, 2),
+                  "pre_model": reshape_pre_net(), "dense_nb_neurons": [40, 1],
+                  "dense_activations": [relu, linear], "name": "cnn1"})
+c2 = (cnn_model, {"conv_layout": conv_operation(Conv1D, 64, 2, 1, "valid", relu, MaxPooling1D, 2),
+                  "pre_model": reshape_pre_net(), "dense_nb_neurons": [120, 1],
+                  "dense_activations": [relu, linear], "name": "cnn2"})
+c3 = (cnn_model, {"conv_layout": conv_operation(Conv1D, 64, 4, 1, "valid", relu, MaxPooling1D, 4),
+                  "pre_model": reshape_pre_net(), "dense_nb_neurons": [120, 1],
+                  "dense_activations": [relu, linear], "name": "cnn3"})
+c4 = (cnn_model, {"conv_layout": [conv_operation(Conv1D, 64, 4, 1, "valid", relu, MaxPooling1D, 4)]*2,
+                  "pre_model": reshape_pre_net(), "dense_nb_neurons": [120, 1],
+                  "dense_activations": [relu, linear], "name": "cnn3"})
 
 # rnn models
-rnn1 = rnn_model(nb_rnn_neurons=[32, 32], dense_nb_neurons=[40, 1], dense_activations=[relu, linear], name="rnn1")
-rnn2 = rnn_model(nb_rnn_neurons=[64, 64], dense_nb_neurons=[40, 1], dense_activations=[relu, linear], name="rnn2")
-rnn3 = rnn_model(nb_rnn_neurons=[128, 64], dense_nb_neurons=[40, 1], dense_activations=[relu, linear], name="rnn3")
+r1 = (rnn_model, {"nb_rnn_neurons": [32, 32], "dense_nb_neurons": [40, 1],
+                  "dense_activations": [relu, linear], "name": "rnn1"})
+r2 = (rnn_model, {"nb_rnn_neurons": [64, 64], "dense_nb_neurons": [40, 1],
+                  "dense_activations": [relu, linear], "name": "rnn2"})
+r3 = (rnn_model, {"nb_rnn_neurons": [128, 64], "dense_nb_neurons": [40, 1],
+                  "dense_activations": [relu, linear], "name": "rnn3"})
 
-nns_oh = [dense1, dense2, dense3, dense4,
-          cnn1, cnn2, cnn3]
-
-nns_em = [dense_embed1, dense_embed2, dense_embed3, dense_embed4,
-          rnn1, rnn2, rnn3]
+nns_oh = [d1, d2, d3, d4, c1, c2, c3, c4]
+nns_em = [d_em1, d_em2, d_em3, d_em4, r1, r2, r3]
 
 
 def grid_search(x_train, y_train, x_val, y_val, nets, categories,
@@ -78,18 +87,22 @@ def grid_search(x_train, y_train, x_val, y_val, nets, categories,
                 drs: List[float] = (0.5, 0.3, 0.1),
                 eps: List[int] = (5, 10, 20, 50, 100, 300),
                 bts: List[int] = (32, 64, 256, 512, 1024),
+                summary: bool= False,
                 tensorboard: bool = False):
     scorer = make_scorer(mean_squared_error, greater_is_better=False)
 
-    for net in nets:
-        net.summary()
+    for i, (net_fn, kw) in enumerate(nets):
         # tensorboard callback
-        if tensorboard:
-            cb_tb = TensorBoard(log_dir="./Graph_nn_{}".format(net.name),
-                                histogram_freq=0, write_graph=True, write_images=True)
+        if summary:
+            net_fn(**kw).summary()
+
+        net = to_regressor(net_fn, kw)
+
+        cb_tb = TensorBoard(log_dir="./Graph_nn_{}".format(kw.get("name")),
+                            histogram_freq=0, write_graph=True, write_images=True)
 
         # add validation measure each 5 epochs
-        checkpoint = ModelCheckpoint(filepath=".models/{}.net".format(net.name), period=5)
+        checkpoint = ModelCheckpoint(filepath=".models/{}.net".format(kw.get("name")), period=5)
         best_model = GridSearchCV(estimator=net, scoring=scorer, cv=inner_cv,
                                   fit_params={"callbacks": [cb_tb]},
                                   param_grid={
@@ -113,10 +126,10 @@ x_tok = get_tokenized_data(data)
 
 x_oh_train, x_oh_val, x_tok_train, x_tok_val, y_train, y_val = train_test_split(x_oh, x_tok, y)
 categories = meas_discretize(pd.Series(y.reshape(-1)))
-inner_cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=123)
+inner_cv = KFold(n_splits=10, shuffle=True, random_state=123)
 outer_cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=321)
 
-results_oh = list(grid_search(x_oh_train, y_train, x_oh_val, y_val,
+results_oh = list(grid_search(x_oh_train, y_train, x_oh_val, y_val, nets=nns_oh,
                               inner_cv=inner_cv, outer_cv=outer_cv, categories=categories))
-results_em = list(grid_search(x_tok_train, y_train, x_tok_val, y_val,
+results_em = list(grid_search(x_tok_train, y_train, x_tok_val, y_val, nets=nns_em,
                               inner_cv=inner_cv, outer_cv=outer_cv, categories=categories))
