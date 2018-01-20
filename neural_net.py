@@ -82,7 +82,6 @@ def dense_model(
             model.add(Dropout(dr))
 
     compile_params = get_optimizer_params(optimizer, learning_rate, momentum_1, momentum_2, epsilon, decay, rho)
-    print(compile_params)
     model.compile(optimizer=optimizer(**compile_params), loss=loss)
 
     return model
