@@ -30,24 +30,24 @@ def dense_model(
         name: Optional[str]=None,
 ) -> Sequential:
     """
-
-    :param nb_units:
-    :param activations:
-    :param l1_regularization:
-    :param l2_regularization:
-    :param dropout_reg:
-    :param input_shape:
-    :param pre_model:
-    :param optimizer:
-    :param loss:
-    :param learning_rate:
-    :param momentum_1:
-    :param momentum_2:
-    :param epsilon:
-    :param decay:
-    :param rho:
+    Generation of fully connected layer
+    :param nb_units: nb of units per layer
+    :param activations: type of activation per layer
+    :param l1_regularization: l1 coef per layer
+    :param l2_regularization: l2 coef per layer
+    :param dropout_reg: dropout rate per dropout layer
+    :param input_shape: shape of input data
+    :param pre_model: usage of un-compiled pre-net
+    :param optimizer: optimizer to use
+    :param loss: loss function
+    :param learning_rate: learning rate used with optimizer
+    :param momentum_1: if required, beta 1 momentum
+    :param momentum_2: if required, beta 2 momentum
+    :param epsilon: if required, optimize epsilon
+    :param decay: if required, optimizer decay
+    :param rho: if required, optimizer rho
     :param name: name of the neural network
-    :return:
+    :return: corresponding keras Sequential model
     """
     if isinstance(nb_units, List) and isinstance(activations, list):
         if len(nb_units) != len(activations):
