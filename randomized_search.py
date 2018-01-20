@@ -58,7 +58,7 @@ nns = [dense1, dense2, dense3, dense4,
 
 
 def grid_search(x_train, y_train, x_val, y_val, categories, nets):
-    scorer = make_scorer(mean_squared_error, greater_is_better=False, )
+    scorer = make_scorer(mean_squared_error, greater_is_better=False)
 
     for net in nets:
         # tensorboard callback
