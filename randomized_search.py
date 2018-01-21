@@ -9,7 +9,6 @@ from sklearn.metrics import make_scorer, mean_squared_error
 from keras.layers import Conv1D, MaxPooling1D
 from keras.activations import relu, linear
 from keras.wrappers.scikit_learn import KerasRegressor
-from keras.callbacks import TensorBoard, ModelCheckpoint
 
 # import models
 from neural_net import dense_model, embed_pre_net, reshape_pre_net
@@ -32,27 +31,27 @@ def to_regressor(model_fn: Callable, kwargs) -> KerasRegressor:
 
 
 # fully connected networks
-d1 = (dense_model, {"nb_units": [40, 40, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+d1 = (dense_model, {"nb_units": [40, 40, 1], "activations": [relu, relu, linear],
                     "input_shape": (180, ), "name": "dense1"})
 
-d2 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+d2 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear],
                     "input_shape": (180, ), "name": "dense2"})
 
-d3 = (dense_model, {"nb_units": [120, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+d3 = (dense_model, {"nb_units": [120, 80, 1], "activations": [relu, relu, linear],
                     "input_shape": (180, ), "name": "dense3"})
 
-d4 = (dense_model, {"nb_units": [80, 80, 80, 1], "activations": [relu, relu, relu, linear], "dropout_reg": 0.3,
+d4 = (dense_model, {"nb_units": [80, 80, 80, 1], "activations": [relu, relu, relu, linear],
                     "input_shape": (180, ), "name": "dense4"})
 
 # fully connected networks with embed layer
 embed = embed_pre_net()
-d_em1 = (dense_model, {"nb_units": [40, 40, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+d_em1 = (dense_model, {"nb_units": [40, 40, 1], "activations": [relu, relu, linear],
                        "pre_model": embed, "name": "dense_embed1"})
-d_em2 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+d_em2 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear],
                        "pre_model": embed, "name": "dense_embed2"})
-d_em3 = (dense_model, {"nb_units": [120, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+d_em3 = (dense_model, {"nb_units": [120, 80, 1], "activations": [relu, relu, linear],
                        "pre_model": embed, "name": "dense_embed3"})
-d_em4 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear], "dropout_reg": 0.3,
+d_em4 = (dense_model, {"nb_units": [80, 80, 1], "activations": [relu, relu, linear],
                        "pre_model": embed, "name": "dense_embed4"})
 
 # cnn networks
@@ -81,30 +80,21 @@ nns_oh = [d1, d2, d3, d4, c1, c2, c3, c4]
 nns_em = [d_em1, d_em2, d_em3, d_em4, r1, r2, r3]
 
 
-def grid_search(x_train, y_train, x_val, y_val, nets, categories,
+def grid_search(x_train, y_train, nets, categories,
                 inner_cv, outer_cv,
                 lrs: List[float] = (0.05, 0.01, 0.005, 0.001),
                 drs: List[float] = (0.5, 0.3, 0.1),
                 eps: List[int] = (5, 10, 20, 50, 100, 300),
                 bts: List[int] = (32, 64, 256, 512, 1024),
-                summary: bool= False,
-                tensorboard: bool = False):
+                summary: bool= False):
     scorer = make_scorer(mean_squared_error, greater_is_better=False)
 
     for i, (net_fn, kw) in enumerate(nets):
-        # tensorboard callback
         if summary:
             net_fn(**kw).summary()
 
         net = to_regressor(net_fn, kw)
-
-        cb_tb = TensorBoard(log_dir="./Graph_nn_{}".format(kw.get("name")),
-                            histogram_freq=0, write_graph=True, write_images=True)
-
-        # add validation measure each 5 epochs
-        checkpoint = ModelCheckpoint(filepath=".models/{}.net".format(kw.get("name")), period=5)
         best_model = GridSearchCV(estimator=net, scoring=scorer, cv=inner_cv,
-                                  fit_params={"callbacks": [cb_tb]},
                                   param_grid={
                                       "learning_rate": lrs,
                                       "dropout_reg": drs,
@@ -114,9 +104,7 @@ def grid_search(x_train, y_train, x_val, y_val, nets, categories,
         best_model.fit(x_train, y_train)
 
         best_score = cross_val_score(X=x_train, y=y_train, estimator=net,
-                                     scoring=scorer, cv=outer_cv, groups=categories,
-                                     fit_params={"callbacks": [cb_tb, checkpoint],
-                                                 "validation_data": (x_val, y_val)})
+                                     scoring=scorer, cv=outer_cv, groups=categories)
         yield best_model.best_params_, best_score
 
 
@@ -129,7 +117,7 @@ categories = meas_discretize(pd.Series(y.reshape(-1)))
 inner_cv = KFold(n_splits=10, shuffle=True, random_state=123)
 outer_cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=321)
 
-results_oh = list(grid_search(x_oh_train, y_train, x_oh_val, y_val, nets=nns_oh,
+results_oh = list(grid_search(x_oh_train, y_train, nets=nns_oh,
                               inner_cv=inner_cv, outer_cv=outer_cv, categories=categories))
-results_em = list(grid_search(x_tok_train, y_train, x_tok_val, y_val, nets=nns_em,
+results_em = list(grid_search(x_tok_train, y_train, nets=nns_em,
                               inner_cv=inner_cv, outer_cv=outer_cv, categories=categories))
