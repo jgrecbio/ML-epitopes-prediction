@@ -121,3 +121,9 @@ results_oh = list(grid_search(x_oh_train, y_train, nets=nns_oh,
                               inner_cv=inner_cv, outer_cv=outer_cv, categories=categories))
 results_em = list(grid_search(x_tok_train, y_train, nets=nns_em,
                               inner_cv=inner_cv, outer_cv=outer_cv, categories=categories))
+results = results_oh + results_em
+scores = list(map(lambda x: x[1], results))
+params = list(map(lambda x: x[0], results))
+max_score_index = scores.index(max(scores))
+print("max score {}".format(max(scores)))
+print(params[max_score_index])
