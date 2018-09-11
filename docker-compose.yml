@@ -1,0 +1,12 @@
+version: '3'
+services:
+  training:
+    build:
+      context: .
+      dockerfile: training.Dockerfile
+    volumes:
+      - ./output:/root/output
+  query:
+    build:
+      context: .
+      dockerfile: query.Dockerfile

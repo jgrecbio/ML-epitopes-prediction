@@ -33,7 +33,7 @@ best_params = a.best_params_
 
 model = dense_model(**merge(best_params, d1[1]))
 model.fit(x_train, y_train)
-model.save("model.mdl")
+model.save("output/model.mdl")
 
-with open("encoder.pck", "wb") as f:
+with open("output/encoder.pck", "wb") as f:
     pickle.dump(enc, f)
