@@ -19,3 +19,4 @@ tensorflow==1.4.1
 tensorflow-tensorboard==0.4.0rc3
 toolz==0.9.0
 Werkzeug==0.14.1
+h5py==2.8.0
