@@ -1,3 +1,4 @@
+from toolz import merge
 import pandas as pd
 import numpy as np
 from keras.wrappers.scikit_learn import KerasRegressor
@@ -27,3 +28,9 @@ b = a.predict(x_val)
 
 c = pd.Series(np.exp(b), name="predicted", index=data_val.index)
 pd.concat([data_val, c], axis=1).to_csv("test.tsv", sep='\t', index=False)
+
+best_params = a.best_params_
+
+model = dense_model(**merge(best_params, d1[1]))
+model.fit(x_train, y_train)
+model.save("model.mdl")
