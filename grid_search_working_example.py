@@ -1,3 +1,4 @@
+import pickle
 from toolz import merge
 import pandas as pd
 import numpy as np
@@ -13,8 +14,7 @@ d1 = (dense_model, {"nb_units": [40, 40, 1], "activations": [relu, relu, linear]
 reg = KerasRegressor(d1[0], **d1[1])
 
 data = load_data()
-print(data.shape)
-_, x_oh, y = get_one_hot_data(data)
+enc, x_oh, y = get_one_hot_data(data)
 x_train, x_val, y_train, y_val, data_train, data_val = train_test_split(x_oh, y, data, train_size=0.9)
 
 categories = meas_discretize(pd.Series(y.reshape(-1)))
@@ -34,3 +34,6 @@ best_params = a.best_params_
 model = dense_model(**merge(best_params, d1[1]))
 model.fit(x_train, y_train)
 model.save("model.mdl")
+
+with open("encoder.pck", "wb") as f:
+    pickle.dump(enc, f)
